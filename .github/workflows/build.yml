@@ -36,3 +36,25 @@ jobs:
 
         make merge_hi6250_defconfig
         make -j$(nproc)
+
+    - name: Package kernel image
+      run: |
+        cd arch/arm64/boot
+        if [ -f Image ]; then
+          gzip -k Image
+        fi
+        ls -la
+
+    - name: Upload kernel image
+      uses: actions/upload-artifact@v4
+      with:
+        name: kernel-Image.gz
+        path: arch/arm64/boot/Image.gz
+        if-no-files-found: warn
+
+    - name: Upload kernel modules
+      uses: actions/upload-artifact@v4
+      with:
+        name: kernel-modules
+        path: "**/*.ko"
+        if-no-files-found: ignore
