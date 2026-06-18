@@ -1,0 +1,38 @@
+name: Build hi6250 Kernel
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout kernel source
+      uses: actions/checkout@v4
+
+    - name: Install build dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y git-core gnupg flex bison gperf build-essential zip curl \
+          zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 libx11-dev lib32z-dev \
+          libgl1-mesa-dev libxml2-utils xsltproc unzip bc gzip
+
+    - name: Download GCC toolchain
+      run: |
+        git clone https://github.com/CoolestEnoch/kernel-su-xiaomi-cas --depth=1
+        mv kernel-su-xiaomi-cas/gcc/ ./gcc
+        rm -rf kernel-su-xiaomi-cas
+
+    - name: Build kernel
+      run: |
+        export ARCH=arm64
+        export CROSS_COMPILE=$(pwd)/gcc/gcc-arm64-gcc-master/bin/aarch64-elf-
+        export CROSS_COMPILE_ARM32=$(pwd)/gcc/gcc-arm-gcc-master/bin/arm-eabi-
+
+        make merge_hi6250_defconfig
+        make -j$(nproc)
