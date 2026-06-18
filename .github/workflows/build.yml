@@ -39,6 +39,8 @@ jobs:
         sudo ln -sf /usr/bin/dtc /tools/dtc
 
         make merge_hi6250_defconfig
+        sed -i 's/CONFIG_HW_CGROUP_PIDS=y/# CONFIG_HW_CGROUP_PIDS is not set/' .config
+        make olddefconfig
         make -j$(nproc) HOSTCFLAGS="-fcommon"
 
     - name: Package kernel image
